@@ -1,7 +1,6 @@
 import { generateText, streamText } from "ai";
 import { xai } from "@ai-sdk/xai";
 import { MAX_OUTPUT_TOKENS } from "./constants";
-import type { StreamTextResult } from "ai";
 
 const model = xai("grok-4-1-fast-reasoning");
 
