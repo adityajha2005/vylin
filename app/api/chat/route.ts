@@ -4,12 +4,20 @@ import { MAX_QUESTION_LENGTH } from "../../../lib/constants";
 import { classifyQuestion } from "../../../logic/classify";
 import { chargeCredits } from "../../../logic/credits";
 import { getRefusalMessage } from "../../../logic/refusal";
+import { searchDocs } from "../../../lib/exa";
+import {
+  buildSystemPrompt,
+  buildUserPrompt,
+} from "../../../logic/prompt";
+import { runLLM } from "../../../lib/llm";
+import { getUserFromRequest } from "../../../lib/auth";
 
 export const runtime = "nodejs";
 
 const ChatSchema = z.object({
   question: z.string().min(1).max(MAX_QUESTION_LENGTH),
   mode: z.enum(["normal", "research", "onchain"]).default("normal"),
+  stream: z.boolean().optional(),
 });
 
 const getClientIdentifier = (req: Request): string => {
@@ -25,10 +33,25 @@ const getClientIdentifier = (req: Request): string => {
   return "ip:unknown";
 };
 
+const shouldSearchDocs = (mode: "normal" | "research" | "onchain"): boolean =>
+  mode === "research";
+
+const isStreamResult = (
+  value: unknown
+): value is { toTextStreamResponse: (init?: ResponseInit) => Response } =>
+  typeof value === "object" &&
+  value !== null &&
+  "toTextStreamResponse" in value &&
+  typeof (value as { toTextStreamResponse?: unknown }).toTextStreamResponse ===
+    "function";
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { question, mode } = ChatSchema.parse(body);
+    const { question, mode, stream } = ChatSchema.parse(body);
+
+    const user = await getUserFromRequest(req);
+    const creditKey = user?.id ?? getClientIdentifier(req);
 
     const classification = classifyQuestion(question);
 
@@ -39,10 +62,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: message }, { status: 403 });
     }
 
-    const creditCheck = await chargeCredits(
-      getClientIdentifier(req),
-      mode
-    );
+    const creditCheck = await chargeCredits(creditKey, mode);
 
     if (!creditCheck.allowed) {
       const message =
@@ -52,10 +72,47 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: message }, { status: 429 });
     }
 
+    const systemPrompt = buildSystemPrompt({ mode });
+
+    let sources:
+      | Array<{ title: string; url: string; excerpt: string }>
+      | undefined;
+
+    if (mode !== "onchain" && shouldSearchDocs(mode)) {
+      const results = await searchDocs(question, { maxResults: 3 });
+      sources = results.length > 0 ? results : undefined;
+    }
+
+    const userPrompt = buildUserPrompt({
+      question,
+      sources,
+      onchainData: mode === "onchain" ? "" : undefined,
+    });
+
+    const finalPrompt = `${systemPrompt}\n\n${userPrompt}`;
+
+    if (stream) {
+      const streamResult = await runLLM(finalPrompt, true);
+      if (isStreamResult(streamResult)) {
+        return streamResult.toTextStreamResponse();
+      }
+
+      return NextResponse.json(
+        { error: "Streaming unavailable" },
+        { status: 500 }
+      );
+    }
+
+    const llmResult = await runLLM(finalPrompt);
+    const responseSources = sources?.map(({ title, url }) => ({
+      title,
+      url,
+    }));
+
     return NextResponse.json({
       ok: true,
-      app: "Vylin",
-      message: "its live",
+      answer: llmResult.text,
+      ...(responseSources ? { sources: responseSources } : {}),
     });
   } catch {
     return NextResponse.json(
