@@ -1,12 +1,13 @@
 "use client";
-import { motion } from "framer-motion";
+
 import { cn } from "@/lib/utils";
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 export const MovingLogoCloud = ({
   items,
-  speed = "normal",
+  speed = "slow",
   direction = "left",
+  pauseOnHover = true,
   className,
 }: {
   items: {
@@ -15,43 +16,72 @@ export const MovingLogoCloud = ({
   }[];
   speed?: "fast" | "normal" | "slow";
   direction?: "left" | "right";
+  pauseOnHover?: boolean;
   className?: string;
 }) => {
-  const duration =
-    speed === "fast" ? 20 : speed === "normal" ? 40 : 80;
+  const [duplicatedItems, setDuplicatedItems] = useState(items);
 
-  const duplicatedItems = [...items, ...items];
+  useEffect(() => {
+    // Duplicate items enough times to ensure smooth scrolling
+    setDuplicatedItems([...items, ...items, ...items, ...items]);
+  }, [items]);
+
+  const getDuration = () => {
+    switch (speed) {
+      case "fast":
+        return "20s";
+      case "normal":
+        return "40s";
+      default:
+        return "80s";
+    }
+  };
 
   return (
     <div
       className={cn(
-        "relative w-full overflow-hidden py-8 [mask-image:linear-gradient(to_right,transparent,white_20%,white_80%,transparent)]",
+        "relative w-full overflow-hidden py-10 select-none [mask-image:linear-gradient(to_right,transparent,white_10%,white_90%,transparent)]",
         className
       )}
     >
-      <motion.div
-        className="flex min-w-full shrink-0 gap-16 w-max flex-nowrap"
-        animate={{
-          x: direction === "left" ? "-50%" : "0%",
-        }}
-        transition={{
-          duration: duration,
-          ease: "linear",
-          repeat: Infinity,
-        }}
+      <style jsx global>{`
+        @keyframes scroll {
+          to {
+            transform: translate(calc(-50% - 0.5rem));
+          }
+        }
+        .animate-scroll {
+          animation: scroll var(--duration) linear infinite;
+          animation-direction: var(--direction);
+        }
+      `}</style>
+
+      <div
+        className={cn(
+          "flex min-w-full shrink-0 gap-12 w-max flex-nowrap animate-scroll items-center",
+          pauseOnHover && "hover:[animation-play-state:paused]"
+        )}
+        style={
+          {
+            "--duration": getDuration(),
+            "--direction": direction === "left" ? "normal" : "reverse",
+          } as React.CSSProperties
+        }
       >
         {duplicatedItems.map((item, idx) => (
           <div
-            className="flex-shrink-0"
-            style={{
-              width: "100px",
-            }}
+            className="group relative flex items-center justify-center transition-all duration-300 hover:scale-110"
             key={`${item.name}-${idx}`}
           >
-            {item.logo}
+            {/* Glow effect */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/20 to-purple-500/20 opacity-0 blur-xl transition-opacity duration-300 group-hover:opacity-100 rounded-full" />
+            
+            <div className="relative opacity-50 grayscale transition-all duration-300 group-hover:opacity-100 group-hover:grayscale-0">
+              {item.logo}
+            </div>
           </div>
         ))}
-      </motion.div>
+      </div>
     </div>
   );
 };

@@ -1,6 +1,8 @@
 import LandingNavbar from "@/components/landing-navbar";
 import { Tooltip } from "@/components/ui/tooltip-card";
 import { MovingLogoCloud } from "@/components/ui/moving-logo-cloud";
+import { MessageSquare, Search, Activity } from "lucide-react";
+
 const SolanaTooltipCard = () => {
   return (
     <div className="rounded-xl">
@@ -66,7 +68,7 @@ export default function Home() {
       <LandingNavbar />
       <main className="hero-content flex w-full max-w-3xl flex-col items-center justify-center px-16 text-center -translate-y-[-220px]">
         <div className="flex flex-col items-center gap-y-4 text-center">
-          <span className="text-[10px] font-medium uppercase tracking-tight text-[#475569] sm:text-xs">
+          <span className="text-md font-semibold uppercase tracking-[0.2em] text-[#475569] sm:text-sm">
             Built for Solana developers
           </span>
           <h1 className="font-ibm-plex-sans text-4xl font-bold text-foreground sm:text-5xl">
@@ -115,7 +117,63 @@ export default function Home() {
       <div className="w-[50%] translate-y-80">
         <MovingLogoCloud items={logos} />
       </div>
-      <div aria-hidden className="h-[120vh]" />
+
+      <section className="mt-[450px] flex w-full max-w-5xl flex-col items-center px-8 text-center">
+        <h2 className="mb-12 text-lg font-semibold uppercase tracking-[0.2em] text-[#475569]">
+          How it works
+        </h2>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          {/* Step 1 */}
+          <div className="group relative flex flex-col items-center overflow-hidden rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/50">
+            <div className="absolute inset-0 z-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] opacity-30" />
+            
+            <div className="relative z-10 mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-slate-600 shadow-sm ring-1 ring-slate-200 transition-all duration-300 group-hover:bg-slate-900 group-hover:text-white group-hover:shadow-lg group-hover:ring-slate-900">
+              <MessageSquare size={26} strokeWidth={1.5} />
+            </div>
+            
+            <h3 className="relative z-10 mb-2 text-lg font-semibold text-slate-900">
+              Ask a question
+            </h3>
+            <p className="relative z-10 text-sm leading-relaxed text-slate-500">
+              Solana, Anchor, programs, PDAs, runtime behavior
+            </p>
+          </div>
+
+          {/* Step 2 */}
+<div className="group relative flex flex-col items-center overflow-hidden rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/50 md:scale-[1.02]">
+            <div className="absolute inset-0 z-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] opacity-30" />
+            
+            <div className="relative z-10 mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-slate-600 shadow-sm ring-1 ring-slate-200 transition-all duration-300 group-hover:bg-slate-800 group-hover:text-white group-hover:shadow-lg group-hover:ring-slate-800">
+              <Search size={26} strokeWidth={1.5} />
+            </div>
+            
+            <h3 className="relative z-10 mb-2 text-lg font-semibold text-slate-900">
+              We fetch official sources
+            </h3>
+            <p className="relative z-10 text-sm leading-relaxed text-slate-500">
+Official docs and verified references
+            </p>
+          </div>
+
+          {/* Step 3 */}
+          <div className="group relative flex flex-col items-center overflow-hidden rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/50">
+            <div className="absolute inset-0 z-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] opacity-30" />
+            
+            <div className="relative z-10 mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-slate-600 shadow-sm ring-1 ring-slate-200 transition-all duration-300 group-hover:bg-slate-900 group-hover:text-white group-hover:shadow-lg group-hover:ring-slate-900">
+              <Activity size={26} strokeWidth={1.5} />
+            </div>
+            
+            <h3 className="relative z-10 mb-2 text-lg font-semibold text-slate-900">
+              Optional on-chain analysis
+            </h3>
+            <p className="relative z-10 text-sm leading-relaxed text-slate-500">
+              Only when you ask for it.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div aria-hidden className="h-[40vh]" />
     </div>
   );
 }
