@@ -5,6 +5,11 @@ import { Redis } from "@upstash/redis";
 export const runtime = "nodejs";
 
 const ratelimit = (() => {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  //bypass ratelimit till redis isnt set.
+  if (!url || !token) return null;
+
   try {
     const redis = Redis.fromEnv();
     return new Ratelimit({

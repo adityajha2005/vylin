@@ -40,7 +40,8 @@ type DbUsageSnapshot = {
 };
 
 const USAGE_TABLE = "usage_limits" as const;
-const COOLDOWN_MS = 30_000 as const;
+// Cooldown duration reduced for testing. Update before launch.
+const COOLDOWN_MS = 1_000 as const;
 
 // NOTE: In-memory store for development only.
 // Used as a fallback if Supabase is unavailable.
@@ -258,6 +259,16 @@ export const chargeCredits = async (
   const today = getUtcDateKey(now);
   const nowMs = now.getTime();
   const nowIso = now.toISOString();
+
+  // Bypass credit limits in development for testing.
+  if (process.env.NODE_ENV !== "production") {
+    return {
+      allowed: true,
+      cost,
+      remaining: limit,
+      limit,
+    };
+  }
 
   const firstSnapshot = await fetchUsageFromDb(safeKey, today);
   if (firstSnapshot.ok) {
