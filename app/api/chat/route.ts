@@ -102,13 +102,20 @@ export async function POST(req: Request) {
 
     if (stream) {
       // Streaming returns a raw text stream.
-      const streamResult = await runLLM({
-        system: systemPrompt,
-        prompt: userPrompt,
-        stream: true,
-      });
-      if (isStreamResult(streamResult)) {
-        return streamResult.toTextStreamResponse();
+      try {
+        const streamResult = await runLLM({
+          system: systemPrompt,
+          prompt: userPrompt,
+          stream: true,
+        });
+        if (isStreamResult(streamResult)) {
+          return streamResult.toTextStreamResponse();
+        }
+      } catch {
+        return NextResponse.json(
+          { error: "LLM request failed" },
+          { status: 502 }
+        );
       }
 
       return NextResponse.json(
@@ -117,20 +124,27 @@ export async function POST(req: Request) {
       );
     }
 
-    const llmResult = await runLLM({
-      system: systemPrompt,
-      prompt: userPrompt,
-    });
-    const responseSources = sources?.map(({ title, url }) => ({
-      title,
-      url,
-    }));
+    try {
+      const llmResult = await runLLM({
+        system: systemPrompt,
+        prompt: userPrompt,
+      });
+      const responseSources = sources?.map(({ title, url }) => ({
+        title,
+        url,
+      }));
 
-    return NextResponse.json({
-      ok: true,
-      answer: llmResult.text,
-      ...(responseSources ? { sources: responseSources } : {}),
-    });
+      return NextResponse.json({
+        ok: true,
+        answer: llmResult.text,
+        ...(responseSources ? { sources: responseSources } : {}),
+      });
+    } catch {
+      return NextResponse.json(
+        { error: "LLM request failed" },
+        { status: 502 }
+      );
+    }
   } catch {
     return NextResponse.json(
       { error: "invalid request" },

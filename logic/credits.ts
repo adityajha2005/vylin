@@ -84,9 +84,9 @@ const getUsage = (key: string): UsageRecord => {
   return existing;
 };
 
-const seedUsage = (key: string, date: string, used: number, lastAt?: number) => {
-  usageByKey.set(key, { date, used, lastRequestAt: lastAt });
-};
+// const seedUsage = (key: string, date: string, used: number, lastAt?: number) => {
+//   usageByKey.set(key, { date, used, lastRequestAt: lastAt });
+// };
 
 const cooldownActive = (lastAt: number | null, nowMs: number): boolean => {
   if (!lastAt) return false;
