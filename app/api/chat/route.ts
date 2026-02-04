@@ -11,6 +11,11 @@ import {
 } from "../../../logic/prompt";
 import { runLLM } from "../../../lib/llm";
 import { getUserFromRequest } from "../../../lib/auth";
+import {
+  fetchTransactionData,
+  initHeliusClient,
+  validateTxHash,
+} from "../../../lib/helius";
 
 export const runtime = "nodejs";
 
@@ -36,6 +41,8 @@ const getClientIdentifier = (req: Request): string => {
 const DOCS_SIGNAL_REGEX =
   /\b(sol[a]?na|anchor|web3|program|rpc|sdk|api|docs|documentation|spec|reference|error|stack trace|signature|transaction|account|wallet|token|mint|instruction)\b/i;
 
+const TX_HASH_REGEX = /\b[1-9A-HJ-NP-Za-km-z]{32,88}\b/;
+
 const shouldSearchDocs = (
   question: string,
   mode: "normal" | "research" | "onchain"
@@ -45,6 +52,13 @@ const shouldSearchDocs = (
   if (!trimmed) return false;
   if (trimmed.length >= 80) return true;
   return DOCS_SIGNAL_REGEX.test(trimmed);
+};
+
+const extractTxHash = (question: string): string | null => {
+  const match = question.match(TX_HASH_REGEX);
+  if (!match) return null;
+  const candidate = match[0];
+  return validateTxHash(candidate) ? candidate : null;
 };
 
 const isStreamResult = (
@@ -85,6 +99,7 @@ export async function POST(req: Request) {
 
     const systemPrompt = buildSystemPrompt({ mode });
 
+    let onchainData: string | undefined;
     let sources:
       | Array<{ title: string; url: string; excerpt: string }>
       | undefined;
@@ -94,10 +109,22 @@ export async function POST(req: Request) {
       sources = results.length > 0 ? results : undefined;
     }
 
+    if (mode === "onchain") {
+      const txHash = extractTxHash(question);
+
+      if (!txHash) {
+        onchainData = "No transaction hash detected.";
+      } else if (!initHeliusClient()) {
+        onchainData = "Helius not configured.";
+      } else {
+        onchainData = await fetchTransactionData(txHash);
+      }
+    }
+
     const userPrompt = buildUserPrompt({
       question,
       sources,
-      onchainData: mode === "onchain" ? "" : undefined,
+      onchainData,
     });
 
     if (stream) {
