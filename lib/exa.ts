@@ -34,22 +34,27 @@ export const searchDocs = async (
   const trimmed = query.trim();
   if (!trimmed) return [];
 
-  const numResults = Math.min(5, Math.max(1, options?.maxResults ?? 3));
+  const numResults = Math.min(10, Math.max(1, options?.maxResults ?? 10));
 
   try {
     const response = await exa.search(trimmed, {
       numResults,
       includeDomains: Array.from(ALLOWED_SEARCH_DOMAINS),
       contents: {
-        text: true,
+        highlights: {
+          maxCharacters: 1200,
+        },
       },
     });
 
     if (!response?.results?.length) return [];
 
     return response.results.map((result) => {
-      const rawExcerpt =
-        "text" in result && typeof result.text === "string" ? result.text : "";
+      const rawExcerpt = Array.isArray((result as { highlights?: unknown }).highlights)
+        ? (result as { highlights: string[] }).highlights.join(" ")
+        : "text" in result && typeof result.text === "string"
+          ? result.text
+          : "";
 
       return {
         title: result.title ?? "",

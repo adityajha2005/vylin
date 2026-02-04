@@ -33,8 +33,19 @@ const getClientIdentifier = (req: Request): string => {
   return "ip:unknown";
 };
 
-const shouldSearchDocs = (mode: "normal" | "research" | "onchain"): boolean =>
-  mode === "research";
+const DOCS_SIGNAL_REGEX =
+  /\b(sol[a]?na|anchor|web3|program|rpc|sdk|api|docs|documentation|spec|reference|error|stack trace|signature|transaction|account|wallet|token|mint|instruction)\b/i;
+
+const shouldSearchDocs = (
+  question: string,
+  mode: "normal" | "research" | "onchain"
+): boolean => {
+  if (mode !== "research") return false;
+  const trimmed = question.trim();
+  if (!trimmed) return false;
+  if (trimmed.length >= 80) return true;
+  return DOCS_SIGNAL_REGEX.test(trimmed);
+};
 
 const isStreamResult = (
   value: unknown
@@ -78,8 +89,8 @@ export async function POST(req: Request) {
       | Array<{ title: string; url: string; excerpt: string }>
       | undefined;
 
-    if (mode !== "onchain" && shouldSearchDocs(mode)) {
-      const results = await searchDocs(question, { maxResults: 3 });
+    if (mode !== "onchain" && shouldSearchDocs(question, mode)) {
+      const results = await searchDocs(question, { maxResults: 10 });
       sources = results.length > 0 ? results : undefined;
     }
 
