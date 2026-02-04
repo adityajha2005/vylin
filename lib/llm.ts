@@ -4,10 +4,19 @@ import { MAX_OUTPUT_TOKENS } from "./constants";
 
 const model = xai("grok-4-1-fast-reasoning");
 
-export const runLLM = async (prompt: string, stream = false) => {
+export const runLLM = async ({
+    system,
+    prompt,
+    stream = false,
+}: {
+    system: string;
+    prompt: string;
+    stream?: boolean;
+}) => {
     if (stream) {
         return streamText({
             model,
+            system,
             prompt,
             maxOutputTokens: MAX_OUTPUT_TOKENS,
         });
@@ -19,6 +28,7 @@ export const runLLM = async (prompt: string, stream = false) => {
 
     const { text, usage } = await generateText({
         model,
+        system,
         prompt,
         maxOutputTokens: MAX_OUTPUT_TOKENS,
     });

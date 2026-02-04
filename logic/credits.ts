@@ -224,12 +224,11 @@ const updateUsageIfUnchanged = async (
   userId: string,
   date: string,
   expectedUsed: number,
-  expectedLastRaw: string | null,
   nextUsed: number,
   nextLastRaw: string
 ): Promise<boolean> => {
   try {
-    let query = supabase
+    const query = supabase
       .from(USAGE_TABLE)
       .update({
         used: nextUsed,
@@ -238,10 +237,6 @@ const updateUsageIfUnchanged = async (
       .eq("user_id", userId)
       .eq("date", date)
       .eq("used", expectedUsed);
-
-    query = expectedLastRaw === null
-      ? query.is("last_request_at", null)
-      : query.eq("last_request_at", expectedLastRaw);
 
     const { data, error } = await query.select("used");
     if (error) return false;
@@ -321,7 +316,6 @@ export const chargeCredits = async (
         safeKey,
         today,
         snapshot.used,
-        snapshot.lastRequestAtRaw,
         nextUsed,
         nowIso
       );

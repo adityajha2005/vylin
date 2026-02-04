@@ -89,10 +89,13 @@ export async function POST(req: Request) {
       onchainData: mode === "onchain" ? "" : undefined,
     });
 
-    const finalPrompt = `${systemPrompt}\n\n${userPrompt}`;
-
     if (stream) {
-      const streamResult = await runLLM(finalPrompt, true);
+      // Streaming returns a raw text stream.
+      const streamResult = await runLLM({
+        system: systemPrompt,
+        prompt: userPrompt,
+        stream: true,
+      });
       if (isStreamResult(streamResult)) {
         return streamResult.toTextStreamResponse();
       }
@@ -103,7 +106,10 @@ export async function POST(req: Request) {
       );
     }
 
-    const llmResult = await runLLM(finalPrompt);
+    const llmResult = await runLLM({
+      system: systemPrompt,
+      prompt: userPrompt,
+    });
     const responseSources = sources?.map(({ title, url }) => ({
       title,
       url,
