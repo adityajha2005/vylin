@@ -15,24 +15,16 @@ import { createClient } from "@supabase/supabase-js";
 
 const navItems = [
   {
-    name: "Products",
-    link: "#products",
-  },
-  {
-    name: "Infrastructure",
-    link: "#infrastructure",
-  },
-  {
-    name: "Research",
-    link: "#research",
-  },
-  {
-    name: "Community",
-    link: "#community",
-  },
-  {
     name: "About",
     link: "#about",
+  },
+  {
+    name: "Github",
+    link: "#github",
+  },
+  {
+    name: "Documentation",
+    link: "#",
   },
 ];
 
@@ -86,7 +78,7 @@ export default function LandingNavbar() {
           <NavbarButton
             as="button"
             onClick={handlePrimaryCTA}
-            className="font-semibold"
+            className="font-semibold cursor-pointer"
           >
             {isAuthenticated ? "Open App" : "Try Now"}
           </NavbarButton>
