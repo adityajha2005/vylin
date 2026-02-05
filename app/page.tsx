@@ -1,6 +1,7 @@
 import LandingNavbar from "@/components/landing-navbar";
 import { Tooltip } from "@/components/ui/tooltip-card";
 import { MovingLogoCloud } from "@/components/ui/moving-logo-cloud";
+import ModeExplanation from "@/components/mode-explanation";
 import { MessageSquare, Search, Activity } from "lucide-react";
 
 const SolanaTooltipCard = () => {
@@ -114,7 +115,10 @@ export default function Home() {
           </span>
         </button>
       </main>
-      <div className="w-[50%] translate-y-80">
+      <div className="w-[50%] translate-y-80 flex flex-col items-center gap-y-4">
+        <span className="text-lg font-semibold uppercase tracking-[0.2em] text-[#94a3b8]">
+          Built on trusted Solana infrastructure
+        </span>
         <MovingLogoCloud items={logos} />
       </div>
 
@@ -171,6 +175,14 @@ Official docs and verified references
             </p>
           </div>
         </div>
+      </section>
+
+      <section className="mt-32 flex w-full max-w-5xl flex-col items-center px-8 text-center">
+        <h2 className="mb-12 text-lg font-semibold uppercase tracking-[0.2em] text-[#475569]">
+          Engineered, not just a wrapper
+        </h2>
+        
+        <ModeExplanation />
       </section>
 
       <div aria-hidden className="h-[40vh]" />
